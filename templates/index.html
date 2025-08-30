@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Student Time Manager</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="brand">Student Time Manager</div>
+
+      <nav class="nav">
+        <button class="nav-btn active" data-target="todo">To-Do</button>
+        <button class="nav-btn" data-target="links">Links</button>
+        <button class="nav-btn" data-target="assignments">Assignments</button>
+        <button class="nav-btn" data-target="jobs">Job Applications</button>
+      </nav>
+
+      <div class="sidebar-foot">
+        <small>Built by <a href="https://www.linkedin.com/in/muhammad-ghulam-ali-b25330216/" target="_blank" rel="noopener">Muhammad Ghulam Ali</a></small>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+      <!-- TODO SECTION -->
+      <section class="page show" id="todo" aria-labelledby="todoTitle">
+        <header class="page-head">
+          <h1 id="todoTitle">To-Do</h1>
+          <div class="controls">
+            <button class="btn primary open-form" data-form="todoForm">+ Add</button>
+          </div>
+        </header>
+
+        <form class="add-form" id="todoForm" data-section="todo">
+          <div class="grid two">
+            <input name="title" placeholder="Title (required)" required />
+            <input name="description" placeholder="Description (optional)" />
+          </div>
+
+          <div class="actions">
+            <button class="btn primary js-save" type="button">Save (placeholder)</button>
+            <button class="btn ghost js-cancel" type="button">Cancel</button>
+          </div>
+        </form>
+
+        <div class="list card-list" id="todoList">
+          <div class="placeholder">No tasks yet — add one using the blue + Add button.</div>
+        </div>
+      </section>
+
+      <!-- LINKS SECTION -->
+      <section class="page" id="links" aria-labelledby="linksTitle">
+        <header class="page-head">
+          <h1 id="linksTitle">Links</h1>
+          <div class="controls">
+            <button class="btn primary open-form" data-form="linksForm">+ Add</button>
+          </div>
+        </header>
+
+        <form class="add-form" id="linksForm" data-section="links">
+          <div class="grid three">
+            <input name="title" placeholder="Title (required)" required />
+            <input name="description" placeholder="Description (optional)" />
+            <input name="link" placeholder="URL (YouTube/course link) (required)" required />
+          </div>
+
+          <div class="actions">
+            <button class="btn primary js-save" type="button">Save (placeholder)</button>
+            <button class="btn ghost js-cancel" type="button">Cancel</button>
+          </div>
+        </form>
+
+        <div class="list card-list" id="linksList">
+          <div class="placeholder">No saved links yet.</div>
+        </div>
+      </section>
+
+      <!-- ASSIGNMENTS SECTION -->
+      <section class="page" id="assignments" aria-labelledby="assignTitle">
+        <header class="page-head">
+          <h1 id="assignTitle">Assignments</h1>
+          <div class="controls">
+            <button class="btn primary open-form" data-form="assignForm">+ Add</button>
+          </div>
+        </header>
+
+        <form class="add-form" id="assignForm" data-section="assignments">
+          <div class="grid four">
+            <input name="subject" placeholder="Subject (required)" required />
+            <input name="title" placeholder="Title (required)" required />
+            <input name="description" placeholder="Description (optional)" />
+            <input name="due" type="date" placeholder="Submission date (required)" required />
+          </div>
+
+          <div class="actions">
+            <button class="btn primary js-save" type="button">Save (placeholder)</button>
+            <button class="btn ghost js-cancel" type="button">Cancel</button>
+          </div>
+        </form>
+
+        <div class="list card-list" id="assignList">
+          <div class="placeholder">No assignments yet.</div>
+        </div>
+      </section>
+
+      <!-- JOBS SECTION -->
+      <section class="page" id="jobs" aria-labelledby="jobsTitle">
+        <header class="page-head">
+          <h1 id="jobsTitle">Job Applications</h1>
+          <div class="controls">
+            <button class="btn primary open-form" data-form="jobsForm">+ Add</button>
+          </div>
+        </header>
+
+        <form class="add-form" id="jobsForm" data-section="jobs">
+          <div class="grid four">
+            <input name="job_title" placeholder="Job Title (required)" required />
+            <input name="company" placeholder="Company (required)" required />
+            <input name="requirements" placeholder="Job Requirements (optional)" />
+            <input name="you_do" placeholder="What you'll do (optional)" />
+          </div>
+
+          <div class="actions">
+            <button class="btn primary js-save" type="button">Save (placeholder)</button>
+            <button class="btn ghost js-cancel" type="button">Cancel</button>
+          </div>
+        </form>
+
+        <div class="list card-list" id="jobsList">
+          <div class="placeholder">No job applications yet.</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <small>© <span id="year"></span> • Built by <a href="https://www.linkedin.com/in/muhammad-ghulam-ali-b25330216/" target="_blank" rel="noopener">Muhammad Ghulam Ali</a></small>
+  </footer>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
