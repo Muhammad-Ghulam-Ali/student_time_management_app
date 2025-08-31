@@ -284,3 +284,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const yearEl = document.getElementById('year');
   if (yearEl) yearEl.textContent = y;
 });
+
+// GA4 test event
+window.addEventListener("load", () => {
+  if (typeof gtag !== "undefined") {
+    gtag("event", "test_event", {
+      event_category: "debug",
+      event_label: "manual_check_from_js",
+      value: 1
+    });
+    console.log("GA4 test_event fired");
+  } else {
+    console.log("gtag not defined, GA4 may not be loading");
+  }
+});
