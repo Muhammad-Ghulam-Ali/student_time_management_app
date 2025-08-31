@@ -95,4 +95,15 @@ input:focus,textarea:focus{ box-shadow:var(--glow); border-color:rgba(59,130,246
 /* small animation */
 @keyframes fadeIn{ from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
 
+/* Links inside the Links list */
+#linksList a {
+  color: rgb(144, 144, 244);             /* normal link color */
+  text-decoration: none;    /* remove underline if you want */
+}
+
+#linksList a:hover {
+  color: var(--accent-2);   /* on hover, use your accent color */
+  text-decoration: underline;
+}
+
 
