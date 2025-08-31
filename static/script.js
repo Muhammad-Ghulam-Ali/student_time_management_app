@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const formId = b.dataset.form;
       document.querySelectorAll('.add-form').forEach(f => {
         f.classList.remove('show');
-        // clear editing state when opening forms normally
         delete f.dataset.editing;
       });
       const f = document.getElementById(formId);
@@ -28,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Cancel buttons just hide the form and clear edit state
+  // Cancel buttons
   document.querySelectorAll('.js-cancel').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const form = e.target.closest('.add-form');
@@ -36,19 +35,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Utility: safe JSON fetch helper
-  async function apiFetch(path, opts = {}) {
-    const resp = await fetch(path, opts);
-    let json = null;
-    try { json = await resp.json(); } catch (e) { /* ignore */ }
-    if (!resp.ok) {
-      const err = (json && json.error) ? json.error : `HTTP ${resp.status}`;
-      throw new Error(err);
-    }
-    return json;
+  // ===== LOCAL STORAGE HELPERS =====
+  function getData(section) {
+    return JSON.parse(localStorage.getItem(section) || '[]');
   }
 
-  // Render helpers
+  function saveData(section, items) {
+    localStorage.setItem(section, JSON.stringify(items));
+  }
+
+  function nextId(section) {
+    const items = getData(section);
+    return items.length ? Math.max(...items.map(i => i.id)) + 1 : 1;
+  }
+
   function makeCard(section, item) {
     const card = document.createElement('div');
     card.className = 'card';
@@ -101,44 +101,39 @@ document.addEventListener('DOMContentLoaded', () => {
       ${controlsHtml}
     `;
 
+    // DELETE
     card.querySelectorAll('.js-delete').forEach(b => {
-      b.addEventListener('click', async (ev) => {
+      b.addEventListener('click', () => {
         const id = parseInt(b.dataset.id, 10);
-        const sec = b.dataset.section;
+        let items = getData(section);
         if (!confirm('Delete this item?')) return;
-        try {
-          await apiFetch(`/api/${sec}/${id}`, { method: 'DELETE' });
-          card.remove();
-          // ✅ FIX: use correct ID for assignments
-          const listId = sec === 'assignments' ? 'assignList' : sec + 'List';
-          const list = document.getElementById(listId);
-          if (!list.querySelector('.card')) {
-            insertPlaceholder(list, sec);
-          }
-        } catch (err) {
-          alert('Delete failed: ' + err.message);
-        }
+        items = items.filter(i => i.id !== id);
+        saveData(section, items);
+        card.remove();
+        const listId = section === 'assignments' ? 'assignList' : section + 'List';
+        const list = document.getElementById(listId);
+        if (list && !list.querySelector('.card')) insertPlaceholder(list, section);
       });
     });
 
+    // EDIT
     card.querySelectorAll('.js-edit').forEach(b => {
-      b.addEventListener('click', (ev) => {
+      b.addEventListener('click', () => {
         const id = parseInt(b.dataset.id, 10);
-        const sec = b.dataset.section;
-        openEditForm(sec, id);
+        openEditForm(section, id);
       });
     });
 
+    // TOGGLE
     card.querySelectorAll('.js-toggle').forEach(b => {
-      b.addEventListener('click', async (ev) => {
+      b.addEventListener('click', () => {
         const id = parseInt(b.dataset.id, 10);
-        const sec = b.dataset.section;
-        try {
-          await apiFetch(`/api/${sec}/${id}/toggle`, { method: 'POST' });
-          await loadSection(sec);
-        } catch (err) {
-          alert('Toggle failed: ' + err.message);
-        }
+        const items = getData(section);
+        const item = items.find(i => i.id === id);
+        if (!item) return;
+        item.completed = !item.completed;
+        saveData(section, items);
+        loadSection(section);
       });
     });
 
@@ -156,29 +151,23 @@ document.addEventListener('DOMContentLoaded', () => {
     listEl.appendChild(ph);
   }
 
-  async function loadSection(section) {
-    try {
-      const json = await apiFetch(`/api/${section}`);
-      const items = json.items || [];
-      const listId = section === 'assignments' ? 'assignList' : section + 'List'; // ✅ FIX
-      const list = document.getElementById(listId);
-      list.innerHTML = '';
-      if (!items.length) {
-        insertPlaceholder(list, section);
-        return;
-      }
-      items.forEach(it => {
-        const card = makeCard(section, it);
-        list.appendChild(card);
-      });
-    } catch (err) {
-      console.error('Failed to load', section, err);
+  function loadSection(section) {
+    const listId = section === 'assignments' ? 'assignList' : section + 'List';
+    const list = document.getElementById(listId);
+    if (!list) return;
+    list.innerHTML = '';
+    const items = getData(section);
+    if (!items.length) {
+      insertPlaceholder(list, section);
+      return;
     }
+    items.forEach(it => {
+      const card = makeCard(section, it);
+      list.appendChild(card);
+    });
   }
 
-  ['todo','links','assignments','jobs'].forEach(s => loadSection(s));
-
-  async function openEditForm(section, id) {
+  function openEditForm(section, id) {
     const formId = {
       todo: 'todoForm',
       links: 'linksForm',
@@ -187,39 +176,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }[section];
     const form = document.getElementById(formId);
     if (!form) return;
-    try {
-      const res = await apiFetch(`/api/${section}/${id}`);
-      const item = res.item;
-      if (section === 'todo') {
-        form.querySelector('[name=title]').value = item.title || '';
-        form.querySelector('[name=description]').value = item.description || '';
-      } else if (section === 'links') {
-        form.querySelector('[name=title]').value = item.title || '';
-        form.querySelector('[name=description]').value = item.description || '';
-        form.querySelector('[name=link]').value = item.url || '';
-      } else if (section === 'assignments') {
-        form.querySelector('[name=subject]').value = item.subject || '';
-        form.querySelector('[name=title]').value = item.title || '';
-        form.querySelector('[name=description]').value = item.description || '';
-        const dueInput = form.querySelector('[name=due]');
-        if (dueInput) dueInput.value = item.due || '';
-      } else if (section === 'jobs') {
-        form.querySelector('[name=job_title]').value = item.job_title || '';
-        form.querySelector('[name=company]').value = item.company || '';
-        form.querySelector('[name=requirements]').value = item.requirements || '';
-        form.querySelector('[name=you_do]').value = item.you_do || '';
-      }
-      form.dataset.editing = id;
-      document.querySelectorAll('.add-form').forEach(f => f.classList.remove('show'));
-      form.classList.add('show');
-      form.querySelector('input, textarea')?.focus();
-    } catch (err) {
-      alert('Failed to load item for edit: ' + err.message);
+    const items = getData(section);
+    const item = items.find(i => i.id === id);
+    if (!item) return;
+
+    if (section === 'todo') {
+      form.querySelector('[name=title]').value = item.title || '';
+      form.querySelector('[name=description]').value = item.description || '';
+    } else if (section === 'links') {
+      form.querySelector('[name=title]').value = item.title || '';
+      form.querySelector('[name=description]').value = item.description || '';
+      form.querySelector('[name=link]').value = item.url || '';
+    } else if (section === 'assignments') {
+      form.querySelector('[name=subject]').value = item.subject || '';
+      form.querySelector('[name=title]').value = item.title || '';
+      form.querySelector('[name=description]').value = item.description || '';
+      const dueInput = form.querySelector('[name=due]');
+      if (dueInput) dueInput.value = item.due || '';
+    } else if (section === 'jobs') {
+      form.querySelector('[name=job_title]').value = item.job_title || '';
+      form.querySelector('[name=company]').value = item.company || '';
+      form.querySelector('[name=requirements]').value = item.requirements || '';
+      form.querySelector('[name=you_do]').value = item.you_do || '';
     }
+    form.dataset.editing = id;
+    document.querySelectorAll('.add-form').forEach(f => f.classList.remove('show'));
+    form.classList.add('show');
+    form.querySelector('input, textarea')?.focus();
   }
 
   document.querySelectorAll('.js-save').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
+    btn.addEventListener('click', (e) => {
       const form = e.target.closest('.add-form');
       if (!form) return;
 
@@ -235,36 +222,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const section = form.dataset.section;
       const formData = Object.fromEntries(new FormData(form).entries());
+      const items = getData(section);
 
-      try {
-        if (form.dataset.editing) {
-          const id = parseInt(form.dataset.editing, 10);
-          await apiFetch(`/api/${section}/${id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-          });
-          await loadSection(section);
-          form.reset();
-          form.classList.remove('show');
-          delete form.dataset.editing;
+      if (form.dataset.editing) {
+        const id = parseInt(form.dataset.editing, 10);
+        const item = items.find(i => i.id === id);
+        if (!item) return;
+        if(section === 'assignments'){
+          item.subject = formData.subject || '';
+          item.title = formData.title || '';
+          item.description = formData.description || '';
+          item.due = formData.due || '';
         } else {
-          const res = await apiFetch(`/api/${section}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-          });
-          const listId = section === 'assignments' ? 'assignList' : section + 'List'; // ✅ FIX
-          const list = document.getElementById(listId);
-          list.querySelector('.placeholder')?.remove();
-          const card = makeCard(section, res.item);
-          list.appendChild(card);
-          form.reset();
-          form.classList.remove('show');
+          Object.assign(item, formData);
+          if (section === 'links') item.url = item.link || '';
         }
-      } catch (err) {
-        alert('Save failed: ' + err.message);
+        saveData(section, items);
+      } else {
+        let newItem;
+        if (section === 'assignments') {
+          newItem = {
+            id: nextId(section),
+            subject: formData.subject || '',
+            title: formData.title || '',
+            description: formData.description || '',
+            due: formData.due || ''
+          };
+          items.push(newItem);
+        } else {
+          newItem = Object.assign({ id: nextId(section), completed: false }, formData);
+          if (section === 'todo') newItem.completed = false;
+          if (section === 'links') newItem.url = newItem.link || '';
+          items.push(newItem);
+        }
+        saveData(section, items);
       }
+
+      form.reset();
+      form.classList.remove('show');
+      delete form.dataset.editing;
+      loadSection(section);
     });
   });
 
@@ -280,6 +277,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function escapeAttr(s) {
     return escapeHtml(s).replace(/"/g, '&quot;');
   }
+
+  ['todo','links','assignments','jobs'].forEach(s => loadSection(s));
 
   const y = new Date().getFullYear();
   const yearEl = document.getElementById('year');
