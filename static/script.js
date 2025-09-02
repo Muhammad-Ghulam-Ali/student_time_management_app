@@ -72,6 +72,10 @@ document.addEventListener('DOMContentLoaded', () => {
         ${item.description ? `<div style="margin-top:6px">${escapeHtml(item.description)}</div>` : ''}
         ${item.due ? `<div style="margin-top:6px">Due: ${escapeHtml(item.due)}</div>` : ''}
       </div>`;
+    } else if (section === 'projects') {
+      metaHtml = `<div style="margin-top:8px;color:var(--muted);font-size:0.92rem">
+        ${item.description ? `<div>${escapeHtml(item.description)}</div>` : ''}
+      </div>`;
     } else if (section === 'jobs') {
       metaHtml = `<div style="margin-top:8px;color:var(--muted);font-size:0.92rem">
         <div><strong>${escapeHtml(item.job_title || '')}</strong> • ${escapeHtml(item.company || '')}</div>
@@ -146,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (section === 'todo') ph.textContent = 'No tasks yet — add one using the blue + Add button.';
     else if (section === 'links') ph.textContent = 'No saved links yet.';
     else if (section === 'assignments') ph.textContent = 'No assignments yet.';
+    else if (section === 'projects') ph.textContent = 'No projects yet.';
     else if (section === 'jobs') ph.textContent = 'No job applications yet.';
     listEl.innerHTML = '';
     listEl.appendChild(ph);
@@ -172,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
       todo: 'todoForm',
       links: 'linksForm',
       assignments: 'assignForm',
+      projects: 'projectsForm',
       jobs: 'jobsForm'
     }[section];
     const form = document.getElementById(formId);
@@ -193,6 +199,9 @@ document.addEventListener('DOMContentLoaded', () => {
       form.querySelector('[name=description]').value = item.description || '';
       const dueInput = form.querySelector('[name=due]');
       if (dueInput) dueInput.value = item.due || '';
+    } else if (section === 'projects') {
+      form.querySelector('[name=title]').value = item.title || '';
+      form.querySelector('[name=description]').value = item.description || '';
     } else if (section === 'jobs') {
       form.querySelector('[name=job_title]').value = item.job_title || '';
       form.querySelector('[name=company]').value = item.company || '';
@@ -278,7 +287,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return escapeHtml(s).replace(/"/g, '&quot;');
   }
 
-  ['todo','links','assignments','jobs'].forEach(s => loadSection(s));
+  ['todo','links','assignments','projects','jobs'].forEach(s => loadSection(s));
 
   const y = new Date().getFullYear();
   const yearEl = document.getElementById('year');

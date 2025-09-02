@@ -4,6 +4,27 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Student Time Manager</title>
+
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="Student Time Manager" />
+  <meta name="description" content="Student Time Manager helps students stay organized with To-Do lists, saved links, assignments, project ideas, and job applications in one place." />
+  <meta name="keywords" content="Student Time Manager, productivity app, student planner, time management, assignments, project ideas, job applications" />
+  <meta name="author" content="Muhammad Ghulam Ali" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://student-time-management-app.onrender.com/" />
+  <meta property="og:title" content="Student Time Manager" />
+  <meta property="og:description" content="Stay on top of your tasks, assignments, project ideas, and job applications with Student Time Manager." />
+  <meta property="og:image" content="https://student-time-management-app.onrender.com/static/preview.png" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://student-time-management-app.onrender.com/" />
+  <meta property="twitter:title" content="Student Time Manager" />
+  <meta property="twitter:description" content="Stay organized with To-Do, assignments, project ideas, and job applications — all in one app." />
+  <meta property="twitter:image" content="https://student-time-management-app.onrender.com/static/preview.png" />
+
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
   <!-- Global site tag (gtag.js) - Google Analytics -->
@@ -26,6 +47,7 @@
         <button class="nav-btn active" data-target="todo">To-Do</button>
         <button class="nav-btn" data-target="links">Links</button>
         <button class="nav-btn" data-target="assignments">Assignments</button>
+        <button class="nav-btn" data-target="projects">Projects Ideas</button>
         <button class="nav-btn" data-target="jobs">Job Applications</button>
       </nav>
 
@@ -114,6 +136,32 @@
 
         <div class="list card-list" id="assignList">
           <div class="placeholder">No assignments yet.</div>
+        </div>
+      </section>
+
+      <!-- PROJECTS SECTION -->
+      <section class="page" id="projects" aria-labelledby="projectsTitle">
+        <header class="page-head">
+          <h1 id="projectsTitle">Projects Ideas</h1>
+          <div class="controls">
+            <button class="btn primary open-form" data-form="projectsForm">+ Add</button>
+          </div>
+        </header>
+
+        <form class="add-form" id="projectsForm" data-section="projects">
+          <div class="grid two">
+            <input name="title" placeholder="Title (required)" required />
+            <input name="description" placeholder="Description (optional)" />
+          </div>
+
+          <div class="actions">
+            <button class="btn primary js-save" type="button">Save</button>
+            <button class="btn ghost js-cancel" type="button">Cancel</button>
+          </div>
+        </form>
+
+        <div class="list card-list" id="projectsList">
+          <div class="placeholder">No projects yet.</div>
         </div>
       </section>
 

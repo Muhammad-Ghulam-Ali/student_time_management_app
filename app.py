@@ -16,6 +16,7 @@ DEFAULT_DATA = {
     "todo": [],
     "links": [],
     "assignments": [],
+    "projects": [],
     "jobs": []
 }
 
@@ -97,6 +98,16 @@ def create_item(section):
             "due": due_date.isoformat(),
             "created_at": datetime.utcnow().isoformat()
         }
+    elif section == "projects":
+        title = (payload.get("title") or "").strip()
+        if not title:
+            return jsonify({"ok": False, "error": "Missing title"}), 400
+        item = {
+            "id": next_id(items),
+            "title": title,
+            "description": payload.get("description", ""),
+            "created_at": datetime.utcnow().isoformat()
+        }
     elif section == "jobs":
         job_title = (payload.get("job_title") or "").strip()
         company = (payload.get("company") or "").strip()
@@ -157,6 +168,9 @@ def update_item(section, item_id):
                 item["due"] = due_date.isoformat()
             except Exception:
                 return jsonify({"ok": False, "error": "Invalid due date format"}), 400
+    elif section == "projects":
+        if "title" in payload: item["title"] = payload["title"].strip() or item["title"]
+        if "description" in payload: item["description"] = payload.get("description", "")
     elif section == "jobs":
         if "job_title" in payload: item["job_title"] = payload["job_title"].strip() or item["job_title"]
         if "company" in payload: item["company"] = payload["company"].strip() or item["company"]
